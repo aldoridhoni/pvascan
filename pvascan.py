@@ -1,14 +1,19 @@
 #!/usr/bin/python
+
 """
 Copyright (c) 2015, M Habib - STMIK Akakom, Yogyakarta
 All rights reserved.
 License : BSD-3-Clause
 """
 
-import csv
-import nmap
-import optparse
-import re
+try:
+	import csv
+	import nmap
+	import optparse
+	import re
+except ImportError:
+	print '[-]Python error, some library cannot imported'
+	exit(0)
 
 reslcan	= None
 host	= ''
@@ -23,9 +28,9 @@ def cekvulndb():
 		db = csv.DictReader(open(vulndb))
 		return db
 	except:
-		print '[-]Scanning stoped'
-		print '| vulnerable databases not selected'
-		print '|__VA Task need Exploit-DB '+vulndb
+		print '[-]Scanning stoped,'
+		print '|  vulnerable databases not selected.'
+		print '|__ VA Task need Exploit-DB '+vulndb
 		exit(0)
 	
 def osdetect():
@@ -36,6 +41,7 @@ def osdetect():
 			'Vendor : '+os['vendor']+', '+os['osfamily']+' '+os['osgen']
 		osinf = os['osfamily']
 	except:
+		print 'For OS detection pvascan need root privillage'
 		osinf = None
 	return osinf
 
@@ -68,8 +74,8 @@ def vulnscan(banner):
 			probex = 'low'
 	if found:
 		print '| vulnerable detected,'
-		print '| ',found,'exploits found'
-		print '|__ probability exploitable ['+probex+']'
+		print '| ',found,'exploits found.'
+		print '|__ Probability exploitable ['+probex+']'
 			
 def nmscan():
 	global host, argu, reslcan, porlis
@@ -80,7 +86,9 @@ def nmscan():
 		porlis = reslcan['scan'][host]['tcp'].keys()
 		return reslcan
 	except:
-		print '[-]Error!!! [nmap problem]'
+		print '[-]Somethings error,'
+		print '|  network problem (or)'
+		print '|__ nmap trouble'
 		exit(0)
 
 def optmenu():
