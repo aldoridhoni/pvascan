@@ -1,2 +1,2 @@
 # pvascan
-Vulnerability scanner tool
+Vulnerability Scanner Tool
