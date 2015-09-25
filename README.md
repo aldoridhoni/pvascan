@@ -1,2 +1,2 @@
 # pvascan
-Vulnerability scanner tool which using Exploit-db files.csv as vulnerability database
+Python vulnerability scanner tool which using Exploit-DB files.csv as vulnerability database
