@@ -1,6 +1,5 @@
 # pvascan
-<dd>Python vulnerability scanner tool which using Exploit-DB files.csv as vulnerability database reference.</dd>
-<dd>Just POC of automation VA (Vulnerability Assessment) while scanning port of Operating System.</dd>
+Python vulnerability scanner tool which using Exploit-DB files.csv as vulnerability database reference. This is just a Proof of Concept tool that automation Vulnerability Assessment while scanning port of Operating System.
 
 #####Some factors that influence result of pvascan :
 * Application/service banner of nmap result scan.
