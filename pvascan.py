@@ -12,7 +12,9 @@ try:
 	import optparse
 	import re
 except ImportError:
-	print '[-]Python error, some library cannot imported'
+	print '[-]Python error, some library cannot imported.'
+	print '| pvascan importing library : csv, nmap, optparse, re'
+	print '|__ Try to: pip install <python-library>'
 	exit(0)
 
 reslcan	= None
@@ -86,15 +88,21 @@ def nmscan():
 		porlis = reslcan['scan'][host]['tcp'].keys()
 		return reslcan
 	except:
-		print '[-]Somethings error,'
-		print '|  network problem (or)'
-		print '|__ nmap trouble'
+		print '[-]Error!!! Somethings wrong,'
+		print '| (network trouble / nmap problem)'
+		print '|__ Please check your connection...'
 		exit(0)
 
 def optmenu():
 	global host
-	parser = optparse.OptionParser('usage: ./pvascan.py -H <ip_target>')
-	parser.add_option('-H', '--host', dest='ip', type='string', help='IP Target')
+	parser = optparse.OptionParser('usage: ./pvascan.py -h')	
+	parser.add_option('-H', '--host', dest='ip', type='string',
+						help='IP of the target that will be scan\n'
+							'for Vulnerability Assessment')		
+	"""__________ Option Methods __________"""
+	#group = optparse.OptionGroup(parser, 'Methods',
+	#			'Just select one of the methods option') 
+	#parser.add_option_group(group)
 	(options, args) = parser.parse_args()
 	host = options.ip
 	if (host == None):
