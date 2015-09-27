@@ -50,13 +50,15 @@ def osdetect():
 def portinf():
 	global porlis
 	oprt = reslcan['scan'][host]['tcp']
-	print 'Discovered open port [',len(porlis),'ports opened ]'
+	print 'Discovered host ports [',len(porlis),']:'
 	for port in porlis:
 		nserv	= oprt[port]['name']
-		banner	= oprt[port]['product']+' '+\
-					oprt[port]['version']
-		print '[+]Port',port,'running service '+nserv+' '+banner
-		vulnscan(banner)
+		banner	= oprt[port]['product']+' '+oprt[port]['version']
+		if (oprt[port]['state']=='open'):
+			print '[+]PORT',port,'['+nserv+'] '+banner
+			vulnscan(banner)
+		else:
+			print '[-]PORT',port,'[STATE:'+oprt[port]['state']+']'
 
 def vulnscan(banner):
 	db = cekvulndb()
@@ -69,15 +71,15 @@ def vulnscan(banner):
 			if c:
 				found+=1
 		if found>3:
-			probex = 'high'
+			probex = 'HIGH'
 		elif found>1:
-			probex = 'medium'
+			probex = 'MEDIUM'
 		elif found>0:
-			probex = 'low'
+			probex = 'LOW'
 	if found:
 		print '| vulnerable detected,'
 		print '| ',found,'exploits found.'
-		print '|__ Probability exploitable ['+probex+']'
+		print '|__ Probability exploitable ['+probex+']\n'
 			
 def nmscan():
 	global host, argu, reslcan, porlis
@@ -94,20 +96,20 @@ def nmscan():
 		exit(0)
 
 def optmenu():
-	global host
+	global host, argu
 	parser = optparse.OptionParser('usage: ./pvascan.py -h')	
 	parser.add_option('-H', '--host', dest='ip', type='string',
 						help='IP of the target that will be scan\n'
-							'for Vulnerability Assessment')		
-	"""__________ Option Methods __________"""
-	#group = optparse.OptionGroup(parser, 'Methods',
-	#			'Just select one of the methods option') 
-	#parser.add_option_group(group)
-	(options, args) = parser.parse_args()
+							'for Vulnerability Assessment')		 
+	parser.add_option('-p', '--port', dest='port', type='string', 
+						help='Scan just the specific TCP port (1-65535)')
+	(options, args) = parser.parse_args()		
 	host = options.ip
 	if (host == None):
 		print parser.usage
 		exit(0)
+	if options.port:
+		argu = '-p '+options.port+' -T4 -A' #'-p 1-65535 -T4 -A'
 
 def main():
 	global reslcan
