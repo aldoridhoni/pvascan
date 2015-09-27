@@ -14,7 +14,7 @@ try:
 except ImportError:
 	print '[-]Python error, some library cannot imported.'
 	print '| pvascan importing library : csv, nmap, optparse, re'
-	print '|__ Try to: pip install <python-library>'
+	print '|__ Try to: pip install <python-library>\n'
 	exit(0)
 
 reslcan	= None
@@ -32,7 +32,7 @@ def cekvulndb():
 	except:
 		print '[-]Scanning stoped,'
 		print '|  vulnerable databases not selected.'
-		print '|__ VA Task need Exploit-DB '+vulndb
+		print '|__ VA Task need Exploit-DB '+vulndb+'\n'
 		exit(0)
 	
 def osdetect():
@@ -92,7 +92,7 @@ def nmscan():
 	except:
 		print '[-]Error!!! Somethings wrong,'
 		print '| (network trouble / nmap problem)'
-		print '|__ Please check your connection...'
+		print '|__ Please try \'--help\'\n'
 		exit(0)
 
 def optmenu():
