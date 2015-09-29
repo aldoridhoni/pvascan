@@ -15,7 +15,7 @@ try:
 	import wget
 except ImportError:
 	print '[-]Python error, some library cannot imported.'
-	print '| pvascan importing library : ConfigParser, csv, nmap, optparse, re, wget'
+	print '| pvascan importing library : ConfigParser, csv, python-nmap, optparse, re, wget'
 	print '|__ Try to: pip install <python-library>\n'
 	exit(0)
 
@@ -58,7 +58,7 @@ def getdb():
 		'security/exploit-database/master/files.csv') # Exploit-DB file.csv
 		editcnf(db)
 	except:
-		print '[-]Error while donwloading file database!'
+		print '[-]Error while downloading file database!'
 		
 def loadb():
 	global dbfile
