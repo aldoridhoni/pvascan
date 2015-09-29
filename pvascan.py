@@ -15,7 +15,8 @@ try:
 	import wget
 except ImportError:
 	print '[-]Python error, some library cannot imported.'
-	print '| pvascan importing library : ConfigParser, csv, python-nmap, optparse, re, wget'
+	print '| pvascan importing library : '
+	print '|	python-nmap, ConfigParser, csv, optparse, re, wget'
 	print '|__ Try to: pip install <python-library>\n'
 	exit(0)
 
@@ -34,8 +35,8 @@ def loadcnf():
 		config.read(cnfile)
 		dbfile = config.get('Configuration', 'database')
 	except:
-		print '[-]Missing file configuration.'
-		print '|__ Please add \''+cnfile+'\'\n'
+		print '[-]Missing configuration file,'
+		print '|__ Please set configuration on file \''+cnfile+'\'\n'
 		exit(0)
 
 def editcnf(db):
@@ -48,9 +49,9 @@ def editcnf(db):
 		config.set('Configuration', 'database', dbfile)
 		with open(cnfile, 'wb') as conf:
 			config.write(conf)
-		print '[+]Configuration changed on file '+cnfile+'\n'
+		print '[+]Configuration updated on file '+cnfile+'.\n'
 	except:
-		print '[-]Error while changing configuration\n'
+		print '[-]Error while updating configuration file!\n'
 
 def getdb():
 	try:
@@ -66,8 +67,8 @@ def loadb():
 		db = csv.DictReader(open(dbfile))
 		return db
 	except:
-		print '[-]Vulnerable database not selected.'
-		print '|__ Please try \'--help\'\n'
+		print '[-]Vulnerability database is not selected.'
+		print '|__ Please try \'./pvascan.py -h\'\n'
 		exit(0)
 
 def vulnscan(banner):
@@ -126,7 +127,7 @@ def nmscan():
 	except:
 		print '[-]Error!!! Somethings wrong,'
 		print '| (network trouble / nmap problem)'
-		print '|__ Please try \'--help\'\n'
+		print '|__ Please try \'./pvascan.py -h\'\n'
 		exit(0)
 
 def optmenu():
@@ -138,10 +139,11 @@ def optmenu():
 	parser.add_option('-p', '--port', dest='port', type='string', 
 					help='Scan just the specific TCP port (1-65535)')
 	parser.add_option('--getdb', action='store_true', dest='getdb',
-					help='Download Exploit-DB database file\n')
+					help='Download Exploit-DB files.csv as vulnerability\n'
+						'database')
 	parser.add_option('--dbs', dest='dbs', type='string',
 					help='Select path where your database file is in\n'
-						'and change the file configuration')
+						'with updating pvascan configuration file')
 	
 	(options, args) = parser.parse_args()
 	host = options.ip
@@ -155,7 +157,7 @@ def optmenu():
 		exit(0)
 	if options.port:
 		argu = '-p '+options.port+' -T4 -A' #'-p 1-65535 -T4 -A'
-	loadb()	# checking vulnerable database
+	loadb()	# checking vulnerability database
 
 def main():
 	loadcnf()
