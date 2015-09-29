@@ -8,5 +8,6 @@ Python vulnerability scanner tool which using Exploit-DB files.csv as vulnerabil
 #####Some screenshots :
 ![alt text][sc1]
 ![alt text][sc2]
-[sc1]: https://lh3.googleusercontent.com/-9GWz23RliXQ/VgqJ8IlLIAI/AAAAAAAAB_I/M6qkhILKkQI/h655/pvascandemo.png "default scan"
-[sc2]: https://lh3.googleusercontent.com/-joWUyeeOIrQ/VgqKNTisfhI/AAAAAAAAB_Q/NTmjeKln5JU/h655/pvascandemop.png "port scan"
+
+[sc1]: https://lh3.googleusercontent.com/-9GWz23RliXQ/VgqJ8IlLIAI/AAAAAAAAB_I/M6qkhILKkQI/h409/pvascandemo.png "default scan"
+[sc2]: https://lh3.googleusercontent.com/-joWUyeeOIrQ/VgqKNTisfhI/AAAAAAAAB_Q/NTmjeKln5JU/h409/pvascandemop.png "port scan"
