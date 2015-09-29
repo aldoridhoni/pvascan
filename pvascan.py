@@ -7,13 +7,15 @@ License : BSD-3-Clause
 """
 
 try:
+	import ConfigParser
 	import csv
 	import nmap
 	import optparse
 	import re
+	import wget
 except ImportError:
 	print '[-]Python error, some library cannot imported.'
-	print '| pvascan importing library : csv, nmap, optparse, re'
+	print '| pvascan importing library : ConfigParser, csv, nmap, optparse, re, wget'
 	print '|__ Try to: pip install <python-library>\n'
 	exit(0)
 
@@ -22,19 +24,73 @@ host	= ''
 osinf	= ''
 porlis	= []
 argu	= '-T4 -A'
-vulndb	= 'files.csv'
+dbfile	= ''
+cnfile	= 'pvascan.cnf'
 
-def cekvulndb():
-	global vulndb
+def loadcnf():
+	global cnfile, dbfile
+	config = ConfigParser.ConfigParser()
 	try:
-		db = csv.DictReader(open(vulndb))
+		config.read(cnfile)
+		dbfile = config.get('Configuration', 'database')
+	except:
+		print '[-]Missing file configuration.'
+		print '|__ Please add \''+cnfile+'\'\n'
+		exit(0)
+
+def editcnf(db):
+	global cnfile, dbfile
+	config = ConfigParser.ConfigParser()
+	dbfile = db
+	try:
+		config.read(cnfile)
+		config.remove_option('Configuration', 'database')
+		config.set('Configuration', 'database', dbfile)
+		with open(cnfile, 'wb') as conf:
+			config.write(conf)
+		print '[+]Configuration changed on file '+cnfile+'\n'
+	except:
+		print '[-]Error while changing configuration\n'
+
+def getdb():
+	try:
+		db = wget.download('https://raw.githubusercontent.com/offensive-'
+		'security/exploit-database/master/files.csv') # Exploit-DB file.csv
+		editcnf(db)
+	except:
+		print '[-]Error connection while donwload file database!'
+		
+def loadb():
+	global dbfile
+	try:
+		db = csv.DictReader(open(dbfile))
 		return db
 	except:
-		print '[-]Scanning stoped,'
-		print '|  vulnerable databases not selected.'
-		print '|__ VA Task need Exploit-DB '+vulndb+'\n'
+		print '[-]Vulnerable database not selected.'
+		print '|__ Please try \'--help\'\n'
 		exit(0)
-	
+
+def vulnscan(banner):
+	db = loadb()
+	found = 0
+	probex = None
+	if len(banner)>1:
+		s = re.compile(banner, re.IGNORECASE)
+		for row in db:
+			c = s.findall(row['description'])
+			if c:
+				found+=1
+		if found>3:
+			probex = 'HIGH'
+		elif found>1:
+			probex = 'MEDIUM'
+		elif found>0:
+			probex = 'LOW'
+	if found:
+		print '| vulnerable detected,'
+		print '| ',found,'exploits found.'
+		print '|__ Probability exploitable ['+probex+']\n'
+				
 def osdetect():
 	global osinf
 	try:
@@ -59,28 +115,7 @@ def portinf():
 			vulnscan(banner)
 		else:
 			print '[-]PORT',port,'[STATE:'+oprt[port]['state']+']'
-
-def vulnscan(banner):
-	db = cekvulndb()
-	found = 0
-	probex = None
-	if len(banner)>1:
-		s = re.compile(banner, re.IGNORECASE)
-		for row in db:
-			c = s.findall(row['description'])
-			if c:
-				found+=1
-		if found>3:
-			probex = 'HIGH'
-		elif found>1:
-			probex = 'MEDIUM'
-		elif found>0:
-			probex = 'LOW'
-	if found:
-		print '| vulnerable detected,'
-		print '| ',found,'exploits found.'
-		print '|__ Probability exploitable ['+probex+']\n'
-			
+					
 def nmscan():
 	global host, argu, reslcan, porlis
 	print 'Scanning for host '+host+'...'
@@ -88,7 +123,6 @@ def nmscan():
 	try:
 		reslcan = nm.scan(hosts=host, arguments=argu)
 		porlis = reslcan['scan'][host]['tcp'].keys()
-		return reslcan
 	except:
 		print '[-]Error!!! Somethings wrong,'
 		print '| (network trouble / nmap problem)'
@@ -99,22 +133,36 @@ def optmenu():
 	global host, argu
 	parser = optparse.OptionParser('usage: ./pvascan.py -h')	
 	parser.add_option('-H', '--host', dest='ip', type='string',
-						help='IP of the target that will be scan\n'
+					help='IP of the target that will be scan\n'
 							'for Vulnerability Assessment')		 
 	parser.add_option('-p', '--port', dest='port', type='string', 
-						help='Scan just the specific TCP port (1-65535)')
-	(options, args) = parser.parse_args()		
+					help='Scan just the specific TCP port (1-65535)')
+	parser.add_option('--getdb', action='store_true', dest='getdb',
+					help='Download Exploit-DB database file\n')
+	parser.add_option('--dbs', dest='dbs', type='string',
+					help='Select path where your database file is in\n'
+					'and change the file configuration')
+	(options, args) = parser.parse_args()
+	
 	host = options.ip
+	if options.getdb:
+		getdb()
+		exit(0)
+	if options.dbs:
+		editcnf(options.dbs)
+		exit(0)	
 	if (host == None):
 		print parser.usage
 		exit(0)
 	if options.port:
 		argu = '-p '+options.port+' -T4 -A' #'-p 1-65535 -T4 -A'
+	loadb()	# checking vulnerable database
 
 def main():
-	global reslcan
-	optmenu()	
+	loadcnf()
+	optmenu()
 	nmscan()
+	global reslcan
 	if reslcan:
 		osdetect()
 		portinf()
