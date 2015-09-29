@@ -58,7 +58,7 @@ def getdb():
 		'security/exploit-database/master/files.csv') # Exploit-DB file.csv
 		editcnf(db)
 	except:
-		print '[-]Error connection while donwload file database!'
+		print '[-]Error while donwloading file database!'
 		
 def loadb():
 	global dbfile
