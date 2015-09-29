@@ -25,7 +25,7 @@ osinf	= ''
 porlis	= []
 argu	= '-T4 -A'
 dbfile	= ''
-cnfile	= 'pvascan.cnf'
+cnfile	= 'config.ini'
 
 def loadcnf():
 	global cnfile, dbfile
@@ -134,23 +134,22 @@ def optmenu():
 	parser = optparse.OptionParser('usage: ./pvascan.py -h')	
 	parser.add_option('-H', '--host', dest='ip', type='string',
 					help='IP of the target that will be scan\n'
-							'for Vulnerability Assessment')		 
+						'for Vulnerability Assessment')		 
 	parser.add_option('-p', '--port', dest='port', type='string', 
 					help='Scan just the specific TCP port (1-65535)')
 	parser.add_option('--getdb', action='store_true', dest='getdb',
 					help='Download Exploit-DB database file\n')
 	parser.add_option('--dbs', dest='dbs', type='string',
 					help='Select path where your database file is in\n'
-					'and change the file configuration')
-	(options, args) = parser.parse_args()
+						'and change the file configuration')
 	
+	(options, args) = parser.parse_args()
 	host = options.ip
 	if options.getdb:
 		getdb()
 		exit(0)
 	if options.dbs:
 		editcnf(options.dbs)
-		exit(0)	
 	if (host == None):
 		print parser.usage
 		exit(0)
