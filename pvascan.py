@@ -23,13 +23,12 @@ except ImportError:
 reslcan	= None
 host	= ''
 osinf	= ''
-porlis	= []
 argu	= '-T4 -A'
 dbfile	= ''
 cnfile	= 'config.ini'
 
 def loadcnf():
-	global cnfile, dbfile
+	global dbfile
 	config = ConfigParser.ConfigParser()
 	try:
 		config.read(cnfile)
@@ -40,7 +39,7 @@ def loadcnf():
 		exit(0)
 
 def editcnf(db):
-	global cnfile, dbfile
+	global dbfile
 	config = ConfigParser.ConfigParser()
 	dbfile = db
 	try:
@@ -62,7 +61,6 @@ def getdb():
 		print '[-]Error while downloading file database!'
 		
 def loadb():
-	global dbfile
 	try:
 		db = csv.DictReader(open(dbfile))
 		return db
@@ -74,23 +72,37 @@ def loadb():
 def vulnscan(banner):
 	db = loadb()
 	found = 0
+	desc = {}
+	url = {}
 	probex = None
+	solution = None
 	if len(banner)>1:
 		s = re.compile(banner, re.IGNORECASE)
 		for row in db:
 			c = s.findall(row['description'])
 			if c:
 				found+=1
+				desc[found] = row['description']
+				url[found] = row['id']				
+					
+	if found:
+		print '| VULNERABLE DETECTED!'
+		print '|- Description : '
+		for x in desc.keys():
+			print '|   ',x,''+desc[x]
+			print '|    |_ Exploit url = https://www.exploit-db.com/exploits/'+url[x]+'/'
 		if found>3:
 			probex = 'HIGH'
+			solution = 'Need to discuss with the system management'
 		elif found>1:
 			probex = 'MEDIUM'
+			solution = 'User firewall to filter transport package'
 		elif found>0:
 			probex = 'LOW'
-	if found:
-		print '| vulnerable detected,'
-		print '| ',found,'exploits found.'
-		print '|__ Probability exploitable ['+probex+']\n'
+			solution = 'Please update your application service'		
+		print '|-',found,'exploits found,'			
+		print '|  Probability exploitable ['+probex+']'
+		print '|__ Current solution : '+solution+'\n'
 				
 def osdetect():
 	global osinf
@@ -105,9 +117,9 @@ def osdetect():
 	return osinf
 
 def portinf():
-	global porlis
+	porlis = reslcan['scan'][host]['tcp'].keys()
 	oprt = reslcan['scan'][host]['tcp']
-	print 'Discovered host ports [',len(porlis),']:'
+	print 'Discovered host ports [',len(porlis),']'
 	for port in porlis:
 		nserv	= oprt[port]['name']
 		banner	= oprt[port]['product']+' '+oprt[port]['version']
@@ -118,12 +130,11 @@ def portinf():
 			print '[-]PORT',port,'[STATE:'+oprt[port]['state']+']'
 					
 def nmscan():
-	global host, argu, reslcan, porlis
+	global reslcan
 	print 'Scanning for host '+host+'...'
 	nm = nmap.PortScanner()
 	try:
 		reslcan = nm.scan(hosts=host, arguments=argu)
-		porlis = reslcan['scan'][host]['tcp'].keys()
 	except:
 		print '[-]Error!!! Somethings wrong,'
 		print '| (network trouble / nmap problem)'
