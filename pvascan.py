@@ -96,7 +96,7 @@ def vulnscan(banner):
 			solution = 'Need to discuss with the system management'
 		elif found>1:
 			probex = 'MEDIUM'
-			solution = 'User firewall to filter transport package'
+			solution = 'Use firewall to filter transport package'
 		elif found>0:
 			probex = 'LOW'
 			solution = 'Please update your application service'		
