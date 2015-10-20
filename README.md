@@ -6,9 +6,6 @@ This is just a Proof of Concept tool that automation Vulnerability Assessment wh
 * Application/service banner of [nmap][nmp] result scan.
 * Randomly named application/service at description [files.csv][csv] of Exploit-DB.
 
-#####Screenshots of pvascan :
-![alt text][sc1]
-![alt text][sc2]
 
 [edb]: https://www.exploit-db.com/
 [nmp]: https://nmap.org/
