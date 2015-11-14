@@ -7,12 +7,8 @@ License : BSD-3-Clause
 """
 
 try:
-	import ConfigParser
-	import csv
-	import nmap
-	import optparse
-	import re
-	import wget
+	import ConfigParser, optparse, platform, csv, re, datetime
+	import nmap, wget
 except ImportError:
 	print '[-]Python error, some library cannot imported.'
 	print '| pvascan importing library : '
@@ -90,19 +86,10 @@ def vulnscan(banner):
 		print '|- Description : '
 		for x in desc.keys():
 			print '|   ',x,''+desc[x]
-			print '|    |_ Exploit url = https://www.exploit-db.com/exploits/'+url[x]+'/'
-		if found>3:
-			probex = 'HIGH'
-			solution = 'Need to discuss with the system management'
-		elif found>1:
-			probex = 'MEDIUM'
-			solution = 'Use firewall to filter transport package'
-		elif found>0:
-			probex = 'LOW'
-			solution = 'Please update your application service'		
+			print '|    | For more information please visit url below'
+			print '|    |_ https://www.exploit-db.com/exploits/'+url[x]+'/'
 		print '|-',found,'exploits found,'			
-		print '|  Probability exploitable ['+probex+']'
-		print '|__ Current solution : '+solution+'\n'
+		print '|__ Please contact the aplication\'s vendor to patch the vulnerable\n'
 				
 def osdetect():
 	global osinf
@@ -131,7 +118,11 @@ def portinf():
 					
 def nmscan():
 	global reslcan
-	print 'Scanning for host '+host+'...'
+	runsys = platform.uname()[0]+' '+platform.uname()[2]
+	print 'From '+runsys
+	print 'On '+datetime.datetime.now().ctime()
+	print 'Scanning for host '+host
+	print '...'
 	nm = nmap.PortScanner()
 	try:
 		reslcan = nm.scan(hosts=host, arguments=argu)
@@ -174,10 +165,12 @@ def main():
 	loadcnf()
 	optmenu()
 	nmscan()
-	global reslcan
-	if reslcan:
+	try :
 		osdetect()
 		portinf()
+	except :
+		print '[-] PVASCAN ERROR!!!'
+		print '|__ Please try \'./pvascan.py -h\'\n'
 	
 if __name__ == '__main__':
 	main()
