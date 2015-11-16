@@ -12,16 +12,17 @@ try:
 except ImportError:
 	print '[-]Python error, some library cannot imported.'
 	print '| pvascan importing library : '
-	print '|	python-nmap, ConfigParser, csv, optparse, re, wget'
+	print '|	python-nmap, wget, csv, re, platform, datetime,'
+	print '|		ConfigParser, optparse'
 	print '|__ Try to: pip install <python-library>\n'
 	exit(0)
 
-reslcan	= None
 host	= ''
-osinf	= ''
 argu	= '-T4 -A'
-dbfile	= ''
 cnfile	= 'config.ini'
+dbfile	= ''
+reslcan	= {}
+osinf	= ''
 
 def loadcnf():
 	global dbfile
@@ -55,7 +56,7 @@ def getdb():
 		editcnf(db)
 	except:
 		print '[-]Error while downloading file database!'
-		
+
 def loadb():
 	try:
 		db = csv.DictReader(open(dbfile))
@@ -70,9 +71,7 @@ def vulnscan(banner):
 	found = 0
 	desc = {}
 	url = {}
-	probex = None
-	solution = None
-	if len(banner)>1:
+	if len(banner)>3:
 		s = re.compile(banner, re.IGNORECASE)
 		for row in db:
 			c = s.findall(row['description'])
@@ -80,7 +79,7 @@ def vulnscan(banner):
 				found+=1
 				desc[found] = row['description']
 				url[found] = row['id']				
-					
+
 	if found:
 		print '| VULNERABLE DETECTED!'
 		print '|- Description : '
@@ -90,7 +89,7 @@ def vulnscan(banner):
 			print '|    |_ https://www.exploit-db.com/exploits/'+url[x]+'/'
 		print '|-',found,'exploits found,'			
 		print '|__ Please contact the aplication\'s vendor to patch the vulnerable\n'
-				
+
 def osdetect():
 	global osinf
 	try:
@@ -115,16 +114,14 @@ def portinf():
 			vulnscan(banner)
 		else:
 			print '[-]PORT',port,'[STATE:'+oprt[port]['state']+']'
-					
+
 def nmscan():
 	global reslcan
-	runsys = platform.uname()[0]+' '+platform.uname()[2]
-	print 'From '+runsys
+	print 'From '+platform.uname()[0]+' '+platform.uname()[2]
 	print 'On '+datetime.datetime.now().ctime()
 	print 'Scanning for host '+host
-	print '...'
-	nm = nmap.PortScanner()
 	try:
+		nm = nmap.PortScanner()
 		reslcan = nm.scan(hosts=host, arguments=argu)
 	except:
 		print '[-]Error!!! Somethings wrong,'
@@ -146,7 +143,7 @@ def optmenu():
 	parser.add_option('--dbs', dest='dbs', type='string',
 					help='Select path where your database file is in\n'
 						'with updating pvascan configuration file')
-	
+
 	(options, args) = parser.parse_args()
 	host = options.ip
 	if options.getdb:
@@ -165,12 +162,15 @@ def main():
 	loadcnf()
 	optmenu()
 	nmscan()
-	try :
-		osdetect()
-		portinf()
-	except :
+	try:
+		ip = reslcan['scan'][host].keys()
+		if ip:
+			osdetect()
+			portinf()
+	except:
 		print '[-] PVASCAN ERROR!!!'
+		print '| problem while connect to target host'
 		print '|__ Please try \'./pvascan.py -h\'\n'
-	
+
 if __name__ == '__main__':
 	main()
