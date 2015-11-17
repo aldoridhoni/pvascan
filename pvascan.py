@@ -151,6 +151,7 @@ def optmenu():
 		exit(0)
 	if options.dbs:
 		editcnf(options.dbs)
+		exit(0)
 	if (host == None):
 		print parser.usage
 		exit(0)
