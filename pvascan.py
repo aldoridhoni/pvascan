@@ -7,7 +7,8 @@ License : BSD-3-Clause
 """
 
 try:
-	import ConfigParser, optparse, platform, csv, re, datetime
+	from ConfigParser import ConfigParser
+	import optparse, platform, csv, re, datetime
 	import nmap, wget
 except ImportError:
 	print '[-]Python error, some library cannot imported.'
@@ -26,18 +27,18 @@ osinf	= ''
 
 def loadcnf():
 	global dbfile
-	config = ConfigParser.ConfigParser()
+	config = ConfigParser()
 	try:
 		config.read(cnfile)
 		dbfile = config.get('Configuration', 'database')
 	except:
 		print '[-]Missing configuration file,'
-		print '|__ Please set configuration on file \''+cnfile+'\'\n'
+		print '|__ Please set configuration on file \'%s\'\n' % cnfile
 		exit(0)
 
 def editcnf(db):
 	global dbfile
-	config = ConfigParser.ConfigParser()
+	config = ConfigParser()
 	dbfile = db
 	try:
 		config.read(cnfile)
@@ -45,7 +46,7 @@ def editcnf(db):
 		config.set('Configuration', 'database', dbfile)
 		with open(cnfile, 'wb') as conf:
 			config.write(conf)
-		print '[+]Configuration updated on file '+cnfile+'.\n'
+		print '\n[+]Configuration updated on file %s.\n' % cnfile
 	except:
 		print '[-]Error while updating configuration file!\n'
 
