@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 """
 Copyright (c) 2015, M Habib - STMIK Akakom, Yogyakarta
@@ -7,170 +7,123 @@ License : BSD-3-Clause
 """
 
 try:
+	import argparse, wget, csv, os
 	from ConfigParser import ConfigParser
-	import optparse, platform, csv, re, datetime
-	import nmap, wget
+	from CNmap import CNmap
 except ImportError:
-	print '[-]Python error, some library cannot imported.'
-	print '| pvascan importing library : '
-	print '|	python-nmap, wget, csv, re, platform, datetime,'
-	print '|		ConfigParser, optparse'
-	print '|__ Try to: pip install <python-library>\n'
+	print '[-] Python error, some library cannot imported.'
+	print '| pvascan importing additional library : '
+	print '|	python-nmap, wget'
+	print '|__ Try: pip install <python-library>\n'
 	exit(0)
 
-host	= ''
-argu	= '-T4 -A'
 cnfile	= 'config.ini'
-dbfile	= ''
-reslcan	= {}
-osinf	= ''
+dbfile	= 'files.csv'
+port = None
+config = ConfigParser()
 
-def loadcnf():
+def createconfig():
+	"""
+	Read cnfile for configuration, if not exist create it first and add Configuration
+	section.
+	"""
+	if not os.path.isfile(cnfile):	
+		with open(cnfile, 'wb') as configfile:
+			config.add_section('Configuration')
+			config.set('Configuration', 'database', dbfile)
+			config.write(configfile)
+			print '[+] New configuration created with default value on file %s.\n' % cnfile 
+
+def loadconfig():
 	global dbfile
-	config = ConfigParser()
 	try:
 		config.read(cnfile)
 		dbfile = config.get('Configuration', 'database')
 	except:
-		print '[-]Missing configuration file,'
-		print '|__ Please set configuration on file \'%s\'\n' % cnfile
+		print '[-] Something is wrong while reading configuration file,'
 		exit(0)
 
-def editcnf(db):
-	global dbfile
-	config = ConfigParser()
-	dbfile = db
+
+def updateconfig(db):
+	"""
+	Updating config with db variable
+	"""
 	try:
 		config.read(cnfile)
-		config.remove_option('Configuration', 'database')
-		config.set('Configuration', 'database', dbfile)
+		config.set('Configuration', 'database', db)
 		with open(cnfile, 'wb') as conf:
 			config.write(conf)
-		print '\n[+]Configuration updated on file %s.\n' % cnfile
+			print '[+] Configuration updated on file %s.\n' % cnfile
 	except:
-		print '[-]Error while updating configuration file!\n'
+		print '[-] Error while updating configuration file!\n'
 
 def getdb():
+	"""
+	Download files.csv
+	Return filename
+	"""
 	try:
 		db = wget.download('https://raw.githubusercontent.com/offensive-'
-		'security/exploit-database/master/files.csv') # Exploit-DB file.csv
-		editcnf(db)
+		'security/exploit-database/master/files.csv') # Exploit-DB files.csv
+		print ''
+		updateconfig('files.csv')
 	except:
-		print '[-]Error while downloading file database!'
+		print '[-] Error while downloading file database!'
 
-def loadb():
+def loadb(dbfile):
+	"""
+	Reload config and load dbfile
+	Return db module
+	"""
 	try:
 		db = csv.DictReader(open(dbfile))
 		return db
 	except:
-		print '[-]Vulnerability database is not selected.'
-		print '|__ Please try \'./pvascan.py -h\'\n'
-		exit(0)
-
-def vulnscan(banner):
-	db = loadb()
-	found = 0
-	desc = {}
-	url = {}
-	if len(banner)>3:
-		s = re.compile(banner, re.IGNORECASE)
-		for row in db:
-			c = s.findall(row['description'])
-			if c:
-				found+=1
-				desc[found] = row['description']
-				url[found] = row['id']				
-
-	if found:
-		print '| VULNERABLE DETECTED!'
-		print '|- Description : '
-		for x in desc.keys():
-			print '|   ',x,''+desc[x]
-			print '|    | For more information please visit url below'
-			print '|    |_ https://www.exploit-db.com/exploits/'+url[x]+'/'
-		print '|-',found,'exploits found,'			
-		print '|__ Please contact the aplication\'s vendor to patch the vulnerable\n'
-
-def osdetect():
-	global osinf
-	try:
-		os = reslcan['scan'][host]['osclass']
-		print 'OS detection accuracy '+os['accuracy']+'% \n'+\
-			'Vendor : '+os['vendor']+', '+os['osfamily']+' '+os['osgen']
-		osinf = os['osfamily']
-	except:
-		print 'For OS detection pvascan need root privillage'
-		osinf = None
-	return osinf
-
-def portinf():
-	porlis = reslcan['scan'][host]['tcp'].keys()
-	oprt = reslcan['scan'][host]['tcp']
-	print 'Discovered host ports [',len(porlis),']'
-	for port in porlis:
-		nserv	= oprt[port]['name']
-		banner	= oprt[port]['product']+' '+oprt[port]['version']
-		if (oprt[port]['state']=='open'):
-			print '[+]PORT',port,'['+nserv+'] '+banner
-			vulnscan(banner)
-		else:
-			print '[-]PORT',port,'[STATE:'+oprt[port]['state']+']'
-
-def nmscan():
-	global reslcan
-	print 'From '+platform.uname()[0]+' '+platform.uname()[2]
-	print 'On '+datetime.datetime.now().ctime()
-	print 'Scanning for host '+host
-	try:
-		nm = nmap.PortScanner()
-		reslcan = nm.scan(hosts=host, arguments=argu)
-	except:
-		print '[-]Error!!! Somethings wrong,'
-		print '| (network trouble / nmap problem)'
+		print '[-] Vulnerability database is not selected.'
 		print '|__ Please try \'./pvascan.py -h\'\n'
 		exit(0)
 
 def optmenu():
-	global host, argu
-	parser = optparse.OptionParser('usage: ./pvascan.py -h')	
-	parser.add_option('-H', '--host', dest='ip', type='string',
-					help='IP of the target that will be scan\n'
-						'for Vulnerability Assessment')		 
-	parser.add_option('-p', '--port', dest='port', type='string', 
+	global host, port
+	parser = argparse.ArgumentParser()	
+	parser.add_argument('-H', '--host', dest='ip',
+					help='IP of the target that will be scan for Vulnerability Assessment')		 
+	parser.add_argument('-p', '--port', dest='port', 
 					help='Scan just the specific TCP port (1-65535)')
-	parser.add_option('--getdb', action='store_true', dest='getdb',
-					help='Download Exploit-DB files.csv as vulnerability\n'
-						'database')
-	parser.add_option('--dbs', dest='dbs', type='string',
-					help='Select path where your database file is in\n'
-						'with updating pvascan configuration file')
+	parser.add_argument('--getdb', action='store_true', dest='getdb',
+					help='Download Exploit-DB files.csv as vulnerability database and exit')
+	parser.add_argument('--dbs', dest='dbs',
+					help='Select path where your database file is in with updating pvascan configuration file')
 
-	(options, args) = parser.parse_args()
+	options = parser.parse_args()
 	host = options.ip
 	if options.getdb:
 		getdb()
 		exit(0)
 	if options.dbs:
-		editcnf(options.dbs)
-		exit(0)
+		updateconfig(options.dbs)
+		loadconfig()
 	if (host == None):
 		print parser.usage
 		exit(0)
 	if options.port:
-		argu = '-p '+options.port+' -T4 -A' #'-p 1-65535 -T4 -A'
-	loadb()	# checking vulnerability database
+		port = options.port
 
 def main():
-	loadcnf()
+	createconfig()
+	loadconfig()
 	optmenu()
-	nmscan()
+
+	db = loadb(dbfile)
+	cnmap = CNmap(host, db, port)
+	cnmap.nmscan()
+	
 	try:
-		ip = reslcan['scan'][host].keys()
-		if ip:
-			osdetect()
-			portinf()
+		if cnmap.result['scan'][host].keys():
+			cnmap.osdetect()
+			cnmap.portinfo()
 	except:
-		print '[-] PVASCAN ERROR!!!'
+		print '[-] Oh Dear!'
 		print '| problem while connect to target host'
 		print '|__ Please try \'./pvascan.py -h\'\n'
 
