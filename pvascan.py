@@ -61,15 +61,11 @@ def update_config(db):
 		print '[-] Error while updating configuration file!\n'
 
 def get_db():
-	"""
-	Download files.csv
-	Return filename
-	"""
 	try:
+		# Exploit-DB files.csv
 		db = wget.download('https://raw.githubusercontent.com/offensive-'
-		'security/exploit-database/master/files.csv') # Exploit-DB files.csv
+		'security/exploit-database/master/files.csv')
 		print ''
-		update_config('files.csv')
 	except:
 		print '[-] Error while downloading file database!'
 
@@ -107,6 +103,7 @@ def opt_menu():
 	hosts = options.ip
 	if options.getdb:
 		get_db()
+		update_config('files.csv')
 	if options.dbs:
 		update_config(options.dbs)
 		validate_db(options.dbs)
@@ -117,7 +114,7 @@ def opt_menu():
 		ports = options.port
 
 def nm_scan(hosts, ports, args='-T4 -A'):
-	print 'From ' + platform.uname()[0] + ' ' +platform.uname()[2]
+	print 'From %s %s' % (platform.uname()[0], platform.uname()[2])
 	print 'On ' + datetime.datetime.now().ctime()
 	print 'Scanning for host ' + hosts
 	try:
